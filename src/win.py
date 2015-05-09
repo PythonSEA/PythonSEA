@@ -1,19 +1,23 @@
 #encoding='utf-8'
-import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui, QtCore, Qt
-from asyncio.tasks import sleep
 #from PyQt5 import QtCore as QtCore
 
 
-class firstwindows(QtWidgets.QWidget):
+class windows(QtWidgets.QWidget):
     
-    blue = []
-    orange = []
-    cyan = []
+    blue    = [0, 160, 255]
+    orange  = [255, 184, 18]
+    cyan    = [188, 210, 50]
+    red     = [251, 111, 32]
+    color_list = {'blue'    : [0, 160, 255],
+                  'orange'  : [255, 184, 18],
+                  'cyan'    : [188, 210, 50],
+                  'red'     : [251, 111, 32]
+                  }
     
     def __init__(self):
-        super(firstwindows, self).__init__()
+        super(windows, self).__init__()
         self.window_width = 750
         self.window_heigth = 600
         self.resize(self.window_width, self.window_heigth) 
@@ -38,13 +42,37 @@ class firstwindows(QtWidgets.QWidget):
 #         self.scroll(0, 1)
                                   
     #通过调用这个函数可以完成窗口布局的设置     
-    def SetWindow(self): 
+    def SetWindow(self, languagecount, count): 
         self.__setbackgroup()
-        self.__setWindowLayout()
-        self.__CreatArrow(500)
-        self.__CreatComboBox()
-        self.__CreatLineEdit()
-        
+        self.__setWindowLayout(languagecount = languagecount, count = count)
+    
+    def ReflushAxis(self, data, button_width = 50, spacing = 50) :
+        keyseq = data[0]
+        keydirctory = data[1]
+        count = data[2]
+        self.count_label.setText("{0}".format(count))
+        self.count_label.adjustSize()
+        for i in range(0, len(keyseq)) :
+            button_heigth = keydirctory[keyseq[i]] / count * self.hline_top
+            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth, 
+                                            button_width, 
+                                            button_heigth)
+            
+            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth - 20, 
+                                            button_width, 
+                                            0)
+            self.count_label_list[i].setText("{0}".format(keydirctory[keyseq[i]]))
+            self.count_label_list[i].adjustSize()
+            
+            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_bottom + 5, 
+                                            button_width, 
+                                            0)
+            self.key_label_list[i].setText("{0}".format(keyseq[i]))
+            self.key_label_list[i].adjustSize()
+            
     def __setbackgroup(self):
         pltt = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QPixmap('../img/backgroup.jpg'))
@@ -54,9 +82,9 @@ class firstwindows(QtWidgets.QWidget):
     #用这个函数可以创建自己的按钮
     #r, g, b三个参数必须为整型参数
     def __CreateButton(self, r, g, b):
-        button = QtWidgets.QPushButton("", self)
+        button = QtWidgets.QPushButton("", self.Axis)
         rgb = "rgb({0}, {1}, {2})".format(r, g, b) 
-        button.setStyleSheet("background-color: " + rgb)   
+        button.setStyleSheet("background-color: " + rgb)  
         return button
     
     #这里暂时做出了下拉框，但是布局还调整好，先留个坑~
@@ -95,58 +123,108 @@ class firstwindows(QtWidgets.QWidget):
         self.histogramsize.setStyleSheet("background-color:rgba(255, 255, 255, 255)")
     #下拉框设置部分代码结束
     
-    #创建柱状图，参数尚未确定呢，待定的代码
-    def __CreatHistogram(self, count  = 0, width = 0):
-        pass
+    #初始化柱状图，参数尚未确定呢，待定的代码
+    def __InitHistogram(self, languagecount = 0, button_width = 50, spacing = 50):
+        self.button_list = []
+        self.count_label_list  = []
+        self.key_label_list = []
+        color_count = len(self.color_list)
+        hrect = QtCore.QRect(self.hline.geometry())
+        self.hline_top = hrect.top()
+        self.hline_bottom = hrect.bottom()
+        for i in range(0, languagecount):
+            if 0 == i % color_count :
+                self.button_list.append(self.__CreateButton(self.color_list['blue'][0], 
+                                                            self.color_list['blue'][1], 
+                                                            self.color_list['blue'][2]))
+            elif 1 == i % color_count :
+                self.button_list.append(self.__CreateButton(self.color_list['orange'][0], 
+                                                            self.color_list['orange'][1], 
+                                                            self.color_list['orange'][2]))
+            elif 2 == i % color_count :
+                self.button_list.append(self.__CreateButton(self.color_list['cyan'][0], 
+                                                            self.color_list['cyan'][1], 
+                                                            self.color_list['cyan'][2]))
+            elif 3 == i % color_count :
+                self.button_list.append(self.__CreateButton(self.color_list['red'][0], 
+                                                            self.color_list['red'][1], 
+                                                            self.color_list['red'][2]))
+            self.count_label_list.append(QtWidgets.QLabel("0", self.Axis))
+            self.key_label_list.append(QtWidgets.QLabel("", self.Axis))
     
+        button_heigth = 10
+        for i in range(0, languagecount):
+            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth, 
+                                            button_width, 
+                                            button_heigth)
+            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth + 20, 
+                                            button_width, 
+                                            0)
+            self.count_label_list[i].adjustSize()
+            
+            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_bottom + 5, 
+                                            button_width, 
+                                            0)
+            self.key_label_list[i].adjustSize()
+            
+        
+#         button = self.__CreateButton(255, 255, 255)
+#         button.setGeometry(spacing + 10, 10, self.button_width, 10)    
     #这个函数使用来设置坐标轴的，一般情况下heigth是固定的
-    def __CreatArrow(self, width = 0, heigth = 450):
+    def __CreatAxis(self, button_width = 50, spacing = 50 , languagecount = 0, heigth = 430):
         origin = []
         origin.append(self.__GetOrigin_X())
         origin.append(self.__GetOrigin_Y())
-        self.Arrow = QtWidgets.QWidget(self)
-        self.Arrow.setMinimumSize(self.window_width - origin[0], heigth);
-        self.Arrow.setStyleSheet("background-color:rgba(255, 255, 255, 255)")
+        width = (spacing + button_width) * (languagecount + 1)
+
         if width < self.window_width - origin[0]:
             width = self.window_width - origin[0]
+            
+        self.Axis = QtWidgets.QWidget(self)
+        self.Axis.setMinimumSize(width, heigth)
+        self.Axis.setStyleSheet("background-color:rgba(255, 255, 255, 255)")
         
         self.scrollarea = QtWidgets.QScrollArea(self);
-        self.scrollarea.setWidget(self.Arrow)
-        self.scrollarea.setGeometry(self.__GetOrigin_X(), self.__GetOrigin_Top(), width, heigth)
+        self.scrollarea.setWidget(self.Axis)
+        self.scrollarea.setGeometry(self.__GetOrigin_X(), self.__GetOrigin_Top(), self.window_width - origin[0], heigth + 20)#这里+20为纵坐标轴的高度加上水平滚动条的高度
         self.scrollarea.setWidgetResizable(True)
-        #self.scrollarea.setHorizontalScrollBarPolicy(Qt.QAbstractScrollArea.verticalScrollBar()) 
              
-        self.hline = QtWidgets.QPushButton(QtGui.QIcon(QtGui.QPixmap("../img/horizentalarrow.png")), "", self.Arrow)
-        self.hline.setGeometry(0, heigth-5, width, 5)
-        self.hline.setIconSize(Qt.QSize(width, 5))
+        self.hline = QtWidgets.QPushButton(QtGui.QIcon(QtGui.QPixmap("../img/horizentalarrow.png")), "", self.Axis)
+        self.hline.setGeometry(0, heigth - 30, width, 5)
+        #self.hline.setIconSize(Qt.QSize(width, 5))
         self.hline.setStyleSheet("background-color:rgba(0, 0, 0, 255)")
         
-        self.vline = QtWidgets.QPushButton(QtGui.QIcon(QtGui.QPixmap("../img/verticalarrow.png")), "", self.Arrow)
+        self.vline = QtWidgets.QPushButton(QtGui.QIcon(QtGui.QPixmap("../img/verticalarrow.png")), "", self.Axis)
         self.vline.setGeometry(0, 0, 5, heigth)
-        self.vline.setIconSize(Qt.QSize(5, heigth))
+        #self.vline.setIconSize(Qt.QSize(5, heigth))
         self.vline.setStyleSheet("background-color:rgba(0, 0, 0, 255)")
         
+        self.__InitHistogram(languagecount = languagecount, button_width = button_width, spacing = spacing)
+        
     def __GetOrigin_X(self):    
-        rect = QtCore.QRect(self.label.geometry())
+        rect = QtCore.QRect(self.count_label.geometry())
         return rect.right() + 5
     
     def __GetOrigin_Y(self):
-        rect = QtCore.QRect(self.label.geometry())
+        rect = QtCore.QRect(self.count_label.geometry())
         return rect.top() +  450
+    
     def __GetOrigin_Top(self):
-        rect = QtCore.QRect(self.label.geometry())
+        rect = QtCore.QRect(self.count_label.geometry())
         return rect.top()
     
-    def __setWindowLayout(self):
+    def __setWindowLayout(self, languagecount = 0, count = 0):
         #这是柱状图
-        self.label = QtWidgets.QLabel('1000',self)
-        self.label.setGeometry(20, 90, 10, 10)
-        self.label.adjustSize()            
-        self.spacing = 10
-
-def mainwindows():
-    app = QtWidgets.QApplication(sys.argv)
-    new = firstwindows()
-    new.SetWindow()
-    new.show()
-    sys.exit(app.exec_())
+        self.count_label = QtWidgets.QLabel('1000',self)
+        self.count_label.setGeometry(20, 100, 10, 10)
+        self.count_label.setText("{0}".format(count))
+        self.count_label.adjustSize()            
+        self.__CreatComboBox()
+        self.__CreatAxis(languagecount = languagecount)
+        self.__CreatLineEdit()
+        
+    def __RrflushHistogram(self):
+        pass
