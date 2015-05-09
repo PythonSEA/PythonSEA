@@ -1,6 +1,7 @@
 #encoding='utf-8'
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui, QtCore, Qt
+from conductdata import GetMostPopularLanguage, GetMostPopularSkillGroup
 #from PyQt5 import QtCore as QtCore
 
 
@@ -47,37 +48,30 @@ class windows(QtWidgets.QWidget):
         self.__setWindowLayout(languagecount = languagecount, count = count)
     
     def ReflushAxis(self, data, button_width = 50, spacing = 50) :
-        keyseq = data[0]
-        keydirctory = data[1]
         count = data[2]
         self.count_label.setText("{0}".format(count))
         self.count_label.adjustSize()
-        for i in range(0, len(keyseq)) :
-            button_heigth = keydirctory[keyseq[i]] / count * self.hline_top
-            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_top - button_heigth, 
-                                            button_width, 
-                                            button_heigth)
-            
-            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_top - button_heigth - 20, 
-                                            button_width, 
-                                            0)
-            self.count_label_list[i].setText("{0}".format(keydirctory[keyseq[i]]))
-            self.count_label_list[i].adjustSize()
-            
-            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_bottom + 5, 
-                                            button_width, 
-                                            0)
-            self.key_label_list[i].setText("{0}".format(keyseq[i]))
-            self.key_label_list[i].adjustSize()
+        self.__ReflushHistogram(data = data, button_width = button_width, spacing = spacing)
+        
+    def ReflushInformationLabel(self, data):
+        self.__ReflushInformationLabel(data = data)
             
     def __setbackgroup(self):
         pltt = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QPixmap('../img/backgroup.jpg'))
         pltt.setBrush(self.backgroundRole(), brush)
         self.setPalette(pltt)
+    #This function is used to create some label
+    #to show the result
+    def __CreateInformationLable(self):
+        self.MPL_label = QtWidgets.QLabel("最受欢迎的语言", self)
+        self.MPL_label.setGeometry(self.__GetOrigin_X(), self.__GetOrigin_Top() - 20, 20, 20)
+        self.MPL_label.adjustSize()
+        
+        MPL_label_rect = QtCore.QRect(self.MPL_label.geometry())
+        self.MPSG_lable = QtWidgets.QLabel("最佳技能组合", self)
+        self.MPSG_lable.setGeometry(MPL_label_rect.right() + 20, MPL_label_rect.top(), 20, 20)
+        self.MPSG_lable.adjustSize()
      
     #用这个函数可以创建自己的按钮
     #r, g, b三个参数必须为整型参数
@@ -221,10 +215,43 @@ class windows(QtWidgets.QWidget):
         self.count_label = QtWidgets.QLabel('1000',self)
         self.count_label.setGeometry(20, 100, 10, 10)
         self.count_label.setText("{0}".format(count))
-        self.count_label.adjustSize()            
+        self.count_label.adjustSize()
+        self.__CreateInformationLable()            
         self.__CreatComboBox()
         self.__CreatAxis(languagecount = languagecount)
         self.__CreatLineEdit()
         
-    def __RrflushHistogram(self):
-        pass
+    def __ReflushHistogram(self, data, button_width = 50, spacing = 50):
+        keyseq = data[0]
+        keydirctory = data[1]
+        count = data[2]
+        for i in range(0, len(keyseq)) :
+            button_heigth = keydirctory[keyseq[i]] / count * self.hline_top
+            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth, 
+                                            button_width, 
+                                            button_heigth)
+            
+            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_top - button_heigth - 20, 
+                                            button_width, 
+                                            0)
+            self.count_label_list[i].setText("{0}".format(keydirctory[keyseq[i]]))
+            self.count_label_list[i].adjustSize()
+            
+            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
+                                            self.hline_bottom + 5, 
+                                            button_width, 
+                                            0)
+            self.key_label_list[i].setText("{0}".format(keyseq[i]))
+            self.key_label_list[i].adjustSize()
+    
+    def __ReflushInformationLabel(self, data):
+        self.MPL_label.setText("最受欢迎的语言为：{0}".format(str(GetMostPopularLanguage(data))))
+        self.MPL_label.adjustSize()
+        
+        self.MPSG_lable.setText("最佳技能组合：{0}".format(str(GetMostPopularLanguage(data))))
+        MPL_label_rect = QtCore.QRect(self.MPL_label.geometry())
+        self.MPSG_lable.setGeometry(MPL_label_rect.right() + 20, MPL_label_rect.top(), 20, 20)
+        self.MPSG_lable.adjustSize()
+        
