@@ -2,7 +2,7 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui, QtCore
 from conductdata import GetMostPopularLanguage, GetMostPopularSkillGroup
-from conductfile import CreateDictionary
+from conductfile import CreateDictionary, CreateDirectory
 #from PyQt5 import QtCore as QtCore
 
 
@@ -101,14 +101,14 @@ class windows(QtWidgets.QWidget):
         #self.comboBox_filter.addItem("类型", userData=None)
         self.comboBox_filter.setGeometry(20, origin[1] + 10, self.comboBox_width, self.comboBox_height)
         
-        self.comboBox_color = QtWidgets.QComboBox(self)
-        self.comboBox_color.resize(self.comboBox_width, self.comboBox_height)
-        self.comboBox_color.addItem("彩色", userData=None)
-        self.comboBox_color.addItem("蓝色", userData=None)
-        self.comboBox_color.addItem("橙色", userData=None)
-        self.comboBox_color.addItem("青色", userData=None)
-        self.comboBox_color.setGeometry(20 * 2 + self.comboBox_width, origin[1] + 10, self.comboBox_width, self.comboBox_height)
-     
+#         self.comboBox_color = QtWidgets.QComboBox(self)
+#         self.comboBox_color.resize(self.comboBox_width, self.comboBox_height)
+#         self.comboBox_color.addItem("彩色", userData=None)
+#         self.comboBox_color.addItem("蓝色", userData=None)
+#         self.comboBox_color.addItem("橙色", userData=None)
+#         self.comboBox_color.addItem("青色", userData=None)
+#         self.comboBox_color.setGeometry(20 * 2 + self.comboBox_width, origin[1] + 10, self.comboBox_width, self.comboBox_height)
+#      
     #创建输入栏，输入柱状图种的柱子的宽度
     def __CreatLineEdit(self):    
         origin = []
@@ -258,6 +258,7 @@ class windows(QtWidgets.QWidget):
             self.button_list[i].show()
             self.key_label_list[i].show()
             self.count_label_list[i].show()
+            
         for i in range(keycount, len(self.button_list)) :
             self.button_list[i].hide()
             self.key_label_list[i].hide()
@@ -274,16 +275,17 @@ class windows(QtWidgets.QWidget):
         
     def __SlotCombox(self, index):
         if 0 == index :
+            self.ReflushAxis(data = CreateDirectory())
+            self.relatedskill_lineedit.setText("查找与一门技能相关的其他技能")
             self.relatedskill_lineedit.setEnabled(False)
         elif 1 == index :
             self.relatedskill_lineedit.setEnabled(True)
+            
+        self.Axis.hide()
+        self.Axis.show()
     
     def __SlotForLineedit(self, keyword):
         keyword = keyword.upper().replace(' ', '')
         data = CreateDictionary(keyword)
         self.__ReflushHistogram(data)
         self.count_label.setText("{0}".format(data[2]))
-        self.Axis.hide()
-        self.Axis.show()
-        
-        

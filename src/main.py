@@ -15,12 +15,11 @@ from Spider import CSpider
     # comp = CGetCompsInfo()
     # comp.startThread()
     # comp.storeWebIndex() 
-    
 data = CreateDirectory()
 app = QtWidgets.QApplication(sys.argv)    
 win = windows()
 win.SetWindow(len(data[0]), data[2])
+win.ReflushAxis(data, button_width = 50, spacing = 50)
 win.show()
-win.ReflushAxis(data, button_width = 50, spacing = 10)
 win.ReflushInformationLabel(data = data)
 sys.exit(app.exec_())
