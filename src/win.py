@@ -1,7 +1,8 @@
 #encoding='utf-8'
 from PyQt5 import QtWidgets
-from PyQt5 import QtGui, QtCore, Qt
+from PyQt5 import QtGui, QtCore
 from conductdata import GetMostPopularLanguage, GetMostPopularSkillGroup
+from conductfile import CreateDictionary
 #from PyQt5 import QtCore as QtCore
 
 
@@ -46,6 +47,10 @@ class windows(QtWidgets.QWidget):
     def SetWindow(self, languagecount, count): 
         self.__setbackgroup()
         self.__setWindowLayout(languagecount = languagecount, count = count)
+        self.comboBox_filter.currentIndexChanged.connect(self.__SlotCombox)
+        self.relatedskill_lineedit.textChanged.connect(self.__SlotForLineedit)
+        
+        
     
     def ReflushAxis(self, data, button_width = 50, spacing = 50) :
         count = data[2]
@@ -92,8 +97,8 @@ class windows(QtWidgets.QWidget):
         self.comboBox_height = 20
         self.comboBox_filter.resize(self.comboBox_width, self.comboBox_height)
         self.comboBox_filter.addItem("语言", userData=None)
-        self.comboBox_filter.addItem("框架", userData=None)
-        self.comboBox_filter.addItem("类型", userData=None)
+        self.comboBox_filter.addItem("相关技能", userData=None)
+        #self.comboBox_filter.addItem("类型", userData=None)
         self.comboBox_filter.setGeometry(20, origin[1] + 10, self.comboBox_width, self.comboBox_height)
         
         self.comboBox_color = QtWidgets.QComboBox(self)
@@ -110,11 +115,13 @@ class windows(QtWidgets.QWidget):
         origin.append(self.__GetOrigin_X())
         origin.append(self.__GetOrigin_Y())
         
-        histogramsize_width = 300
-        histogramsize_heigth = 20
-        self.histogramsize = QtWidgets.QLineEdit("设置柱状图的宽度：数值只能在10~100之间", self)
-        self.histogramsize.setGeometry(20 * 3 + self.comboBox_width * 2, origin[1] + 10, histogramsize_width, histogramsize_heigth)
-        self.histogramsize.setStyleSheet("background-color:rgba(255, 255, 255, 255)")
+        relatedskill_width = 300
+        relatedskill_heigth = 20
+        self.relatedskill_lineedit = QtWidgets.QLineEdit("查找与一门技能相关的其他技能", self)
+        self.relatedskill_lineedit.setGeometry(20 * 3 + self.comboBox_width * 2, origin[1] + 10, relatedskill_width, relatedskill_heigth)
+        self.relatedskill_lineedit.setStyleSheet("background-color:rgba(255, 255, 255, 255)")
+        self.relatedskill_lineedit.setEnabled(False)
+        
     #下拉框设置部分代码结束
     
     #初始化柱状图，参数尚未确定呢，待定的代码
@@ -212,6 +219,7 @@ class windows(QtWidgets.QWidget):
     
     def __setWindowLayout(self, languagecount = 0, count = 0):
         #这是柱状图
+        #self.languagecount = languagecount
         self.count_label = QtWidgets.QLabel('1000',self)
         self.count_label.setGeometry(20, 100, 10, 10)
         self.count_label.setText("{0}".format(count))
@@ -224,34 +232,58 @@ class windows(QtWidgets.QWidget):
     def __ReflushHistogram(self, data, button_width = 50, spacing = 50):
         keyseq = data[0]
         keydirctory = data[1]
+        keycount = len(keyseq)
         count = data[2]
-        for i in range(0, len(keyseq)) :
+        for i in range(0, keycount) :
             button_heigth = keydirctory[keyseq[i]] / count * self.hline_top
-            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_top - button_heigth, 
-                                            button_width, 
+            self.button_list[i].setGeometry(spacing * (i + 1) + i * button_width,
+                                            self.hline_top - button_heigth,
+                                            button_width,
                                             button_heigth)
             
-            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_top - button_heigth - 20, 
-                                            button_width, 
+            self.count_label_list[i].setGeometry(spacing * (i + 1) + i * button_width,
+                                            self.hline_top - button_heigth - 20,
+                                            button_width,
                                             0)
             self.count_label_list[i].setText("{0}".format(keydirctory[keyseq[i]]))
             self.count_label_list[i].adjustSize()
             
-            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width, 
-                                            self.hline_bottom + 5, 
-                                            button_width, 
+            self.key_label_list[i].setGeometry(spacing * (i + 1) + i * button_width,
+                                            self.hline_bottom + 5,
+                                            button_width,
                                             0)
             self.key_label_list[i].setText("{0}".format(keyseq[i]))
             self.key_label_list[i].adjustSize()
+            
+            self.button_list[i].show()
+            self.key_label_list[i].show()
+            self.count_label_list[i].show()
+        for i in range(keycount, len(self.button_list)) :
+            self.button_list[i].hide()
+            self.key_label_list[i].hide()
+            self.count_label_list[i].hide()
     
     def __ReflushInformationLabel(self, data):
         self.MPL_label.setText("最受欢迎的语言为：{0}".format(str(GetMostPopularLanguage(data))))
         self.MPL_label.adjustSize()
         
-        self.MPSG_lable.setText("最佳技能组合：{0}".format(str(GetMostPopularLanguage(data))))
+        self.MPSG_lable.setText("最佳技能组合：{0}".format(str(GetMostPopularSkillGroup(data))))
         MPL_label_rect = QtCore.QRect(self.MPL_label.geometry())
         self.MPSG_lable.setGeometry(MPL_label_rect.right() + 20, MPL_label_rect.top(), 20, 20)
         self.MPSG_lable.adjustSize()
+        
+    def __SlotCombox(self, index):
+        if 0 == index :
+            self.relatedskill_lineedit.setEnabled(False)
+        elif 1 == index :
+            self.relatedskill_lineedit.setEnabled(True)
+    
+    def __SlotForLineedit(self, keyword):
+        keyword = keyword.upper().replace(' ', '')
+        data = CreateDictionary(keyword)
+        self.__ReflushHistogram(data)
+        self.count_label.setText("{0}".format(data[2]))
+        self.Axis.hide()
+        self.Axis.show()
+        
         
